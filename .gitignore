@@ -1,0 +1,38 @@
+# Python bytecode
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Pytest cache
+.pytest_cache/
+
+# Coverage and reports
+htmlcov/
+.coverage
+.coverage.*
+coverage.xml
+
+# Playwright artifacts
+playwright-report/
+test-results/
+
+# OS/editor files
+.DS_Store
+Thumbs.db
+.vscode/
+*.swp
+*.swo
+
+# Environment files
+.env
+.env.*
+
+# Build/dist outputs
+build/
+dist/
+*.egg-info/
