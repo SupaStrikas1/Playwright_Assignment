@@ -1,0 +1,48 @@
+version: 0.1
+
+# HyperExecute task OS. Browser/OS execution matrix is controlled in conftest.py
+# via LambdaTest cloud capabilities (Windows 10 + Linux).
+runson: linux
+
+autosplit: true
+concurrency: 2
+retryOnFailure: true
+maxRetries: 2
+
+runtime:
+  - language: python
+    version: "3.11"
+
+# Secret management + env injection.
+# Configure these two keys in HyperExecute Secrets and they are injected here.
+env:
+  LT_USERNAME: ${{ .secrets.LT_USERNAME }}
+  LT_ACCESS_KEY: ${{ .secrets.LT_ACCESS_KEY }}
+
+# Pre steps (mandatory) + dependency caching (mandatory).
+pre:
+  - python -m pip install --upgrade pip
+  - pip install -r requirements.txt
+
+cacheKey: '{{ checksum "requirements.txt" }}'
+cacheDirectories:
+  - ~/.cache/pip
+  - ~/.cache/ms-playwright
+
+testDiscovery:
+  type: raw
+  mode: remote
+  command: ls tests/test_*.py
+
+testRunnerCommand: pytest -q --tb=short $test
+
+# Artifacts management (mandatory): upload and merge artifacts from all tasks.
+mergeArtifacts: true
+uploadArtefacts:
+  - name: Pytest-And-Playwright-Artifacts
+    path:
+      - .pytest_cache/**
+      - test-results/**
+      - playwright-report/**
+
+# Optional post steps are intentionally omitted.

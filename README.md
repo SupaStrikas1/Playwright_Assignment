@@ -44,6 +44,12 @@ Run all tests:
 pytest
 ```
 
+Run all tests in parallel locally (xdist):
+
+```bash
+pytest -n 2
+```
+
 Run a single test:
 
 ```bash
@@ -70,6 +76,39 @@ On Windows PowerShell:
 ```powershell
 $env:LT_USERNAME = "your_lambdatest_username"
 $env:LT_ACCESS_KEY = "your_lambdatest_access_key"
+```
+
+## HyperExecute (mandatory assignment execution)
+
+This repository includes `hyperexecute.yaml` with mandatory Assignment 102 features:
+
+- Parallel execution (`autosplit` + `concurrency: 2`)
+- At least 2 browser/OS combinations on cloud grid (configured in `conftest.py` capability matrix)
+- Artifacts Management (`uploadArtefacts`, `mergeArtifacts`)
+- Secret Management (HyperExecute Secrets injected via `env`)
+- Environment Variable Injection (`env` block)
+- Pre Steps (`pre` block)
+- Dependency Caching (`cacheKey`, `cacheDirectories`)
+
+### Configure HyperExecute secrets
+
+Create these secrets in HyperExecute before triggering the job:
+
+- `LT_USERNAME`
+- `LT_ACCESS_KEY`
+
+The YAML injects them with:
+
+```yaml
+env:
+   LT_USERNAME: ${{ .secrets.LT_USERNAME }}
+   LT_ACCESS_KEY: ${{ .secrets.LT_ACCESS_KEY }}
+```
+
+### Trigger the HyperExecute job
+
+```bash
+hyperexecute --config hyperexecute.yaml
 ```
 
 ## Notes

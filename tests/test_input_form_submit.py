@@ -25,7 +25,11 @@ def test_input_form_submit_requires_fields_then_succeeds(page):
     # Step 2 & 3: submit empty form, expect native validation to block it.
     input_form.submit()
     assert input_form.is_form_valid() is False
-    assert "fill" in input_form.get_name_field_validation_message().lower()
+    validation_message = input_form.get_name_field_validation_message().strip()
+    assert validation_message in (
+        "Please fill out this field.",
+        "Please fill in this field.",
+    )
 
     # Step 4-6: fill in all required fields.
     input_form.fill_form(

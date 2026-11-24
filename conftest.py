@@ -5,11 +5,13 @@ fixture values across worker processes, so the browser/OS combinations below are
 executed in parallel on TestMu AI.
 """
 import json
+import time
 import urllib.parse
 from datetime import datetime
 
 import pytest
 from dotenv import load_dotenv
+from playwright.sync_api import Error as PlaywrightError
 from playwright.sync_api import sync_playwright
 
 from utils.lambdatest_capabilities import build_capabilities
@@ -17,7 +19,7 @@ from utils.lambdatest_capabilities import build_capabilities
 load_dotenv()
 
 LT_CDP_URL = "wss://cdp.lambdatest.com/playwright"
-BUILD_NAME = f"Playwright 101 - Selenium Playground ({datetime.now().strftime('%Y-%m-%d %H:%M')})"
+BUILD_NAME = f"Playwright 102 - Selenium Playground ({datetime.now().strftime('%Y-%m-%d %H:%M')})"
 
 # At least 2 different browser/OS combinations, executed in parallel via pytest-xdist.
 # Both combinations use real, CDP-based browsers (not Playwright's bundled pw-firefox
@@ -91,7 +93,22 @@ def page(request, capability):
             build_name=BUILD_NAME,
         )
         ws_endpoint = f"{LT_CDP_URL}?capabilities={urllib.parse.quote(json.dumps(capabilities))}"
-        browser = browser_type.connect(ws_endpoint)
+        browser = None
+        last_error = None
+        # Transient 5xx/CDP provisioning failures can occur on spot infra.
+        # Retry a few times before failing the test setup.
+        for attempt in range(1, 7):
+            try:
+                browser = browser_type.connect(ws_endpoint, timeout=120_000)
+                break
+            except PlaywrightError as exc:
+                last_error = exc
+                if attempt < 6:
+                    time.sleep(min(30, 5 * attempt))
+
+        if browser is None:
+            raise last_error
+
         context = browser.new_context()
         lt_page = context.new_page()
 
